@@ -1,7 +1,6 @@
 package com.project.demo.rest.category;
 import com.project.demo.logic.entity.category.Category;
 import com.project.demo.logic.entity.category.CategoryRepository;
-import com.project.demo.logic.entity.game.Game;
 import com.project.demo.logic.entity.user.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,8 +19,12 @@ public class CategoryController {
         return categoryRepository.findAll();
     }
 
+    @GetMapping("/{id}")
+    public Category getCategoryById(@PathVariable Long id) {
+        return categoryRepository.findById(id).orElseThrow(RuntimeException::new);
+    }
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
     public Category updateGame(@PathVariable Long id, @RequestBody Category category) {
         return categoryRepository.findById(id)
                 .map(existingCategory -> {
@@ -34,16 +37,16 @@ public class CategoryController {
                     return categoryRepository.save(category);
                 });
     }
-    //revisar auth
+
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
-    public Category addGame(@RequestBody Category category) {
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
+    public Category addProduct(@RequestBody Category category) {
         return  categoryRepository.save(category);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
     @DeleteMapping("/{id}")
-    public void deletCategory (@PathVariable Long id) {
+    public void deleteCategory (@PathVariable Long id) {
         categoryRepository.deleteById(id);
     }
 

@@ -3,7 +3,7 @@ package com.project.demo.logic.entity.category;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-@Table(name = "game")
+@Table(name = "category")
 @Entity
 public class Category {
         @Id
