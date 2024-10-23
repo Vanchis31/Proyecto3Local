@@ -10,6 +10,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import com.project.demo.logic.entity.http.GlobalResponseHandler;
+import com.project.demo.logic.entity.http.Meta;
+import com.project.demo.logic.entity.category.Category;
+import com.project.demo.logic.entity.category.CategoryRepository;
+import com.project.demo.logic.entity.user.User;
+import com.project.demo.logic.entity.user.UserRepository;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+import java.util.Optional;
+import java.util.List;
 import javax.xml.catalog.Catalog;
 import java.util.List;
 import java.util.Optional;
@@ -24,10 +41,27 @@ public class ProductController {
     private CategoryRepository categoryRepository;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'USER')")
-    public List<Product> getAllCategories(){
-        return productRepository.findAll();
+    @PreAuthorize("isAuthenticated()")
+    public  ResponseEntity<?> getAll(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            HttpServletRequest request) {
+
+        Pageable pageable = PageRequest.of(page-1, size);
+        Page<Product> productPage = productRepository.findAll(pageable);
+        Meta meta = new Meta(request.getMethod(), request.getRequestURL().toString());
+        meta.setTotalPages(productPage.getTotalPages());
+        meta.setTotalElements(productPage.getTotalElements());
+        meta.setPageNumber(productPage.getNumber() + 1);
+        meta.setPageSize(productPage.getSize());
+
+        return new GlobalResponseHandler().handleResponse("Products retrieved successfully",
+                productPage.getContent(), HttpStatus.OK, meta);
     }
+
+   /* public List<Product> getAllCategories(){
+        return productRepository.findAll();
+    }*/
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN')")

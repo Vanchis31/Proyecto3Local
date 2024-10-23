@@ -70,25 +70,17 @@ public class CategoryController {
     @PostMapping
     @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
     public ResponseEntity<?> addCategory(@RequestBody Category category, HttpServletRequest request){
-        Optional<Category> foundCategory = categoryRepository.findById(category.getId());
-        if(foundCategory.isPresent()) {
-            Category savedCategory = categoryRepository.save(category);
-            return new GlobalResponseHandler().handleResponse("Category created successfully",
-                    savedCategory, HttpStatus.CREATED, request);
-        }else return new GlobalResponseHandler().handleResponse("Category id " + category.getId() + " not found"  ,
-                HttpStatus.NOT_FOUND, request);
+        Category savedCategory =  categoryRepository.save(category);
+        return new GlobalResponseHandler().handleResponse("Category created successfully",
+                savedCategory, HttpStatus.CREATED, request);
     }
 
     @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteCategory(@PathVariable Long id, HttpServletRequest request){
-        Optional<Category> foundCategory = categoryRepository.findById(id);
-        if(foundCategory.isPresent()) {
-            categoryRepository.deleteById(id);
-            return new GlobalResponseHandler().handleResponse("Category deleted successfully",
-                    HttpStatus.OK, request);
-        }else return new GlobalResponseHandler().handleResponse("Category id " + id + " not found"  ,
-                HttpStatus.NOT_FOUND, request);
+        categoryRepository.deleteById(id);
+        return new GlobalResponseHandler().handleResponse("Category deleted successfully",
+                HttpStatus.CREATED, request);
     }
 
     /*public void deleteCategory (@PathVariable Long id) {
