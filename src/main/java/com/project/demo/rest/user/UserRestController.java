@@ -1,13 +1,31 @@
 package com.project.demo.rest.user;
-
+/*
 import com.project.demo.logic.entity.user.User;
 import com.project.demo.logic.entity.user.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.*; */
+import com.project.demo.logic.entity.http.GlobalResponseHandler;
+import com.project.demo.logic.entity.http.Meta;
+import com.project.demo.logic.entity.user.User;
+import com.project.demo.logic.entity.user.UserRepository;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+
 
 import java.util.List;
 
@@ -22,15 +40,23 @@ public class UserRestController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
-    public List<User> getAllUsers() {
-        return UserRepository.findAll();
+    public ResponseEntity<?> getAll(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            HttpServletRequest request) {
+
+        Pageable pageable = PageRequest.of(page-1, size);
+        Page<User> ordersPage = UserRepository.findAll(pageable);
+        Meta meta = new Meta(request.getMethod(), request.getRequestURL().toString());
+        meta.setTotalPages(ordersPage.getTotalPages());
+        meta.setTotalElements(ordersPage.getTotalElements());
+        meta.setPageNumber(ordersPage.getNumber() + 1);
+        meta.setPageSize(ordersPage.getSize());
+
+        return new GlobalResponseHandler().handleResponse("Order retrieved successfully",
+                ordersPage.getContent(), HttpStatus.OK, meta);
     }
 
-    @PostMapping
-    public User addUser(@RequestBody User user) {
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        return UserRepository.save(user);
-    }
 
     @GetMapping("/{id}")
     public User getUserById(@PathVariable Long id) {
